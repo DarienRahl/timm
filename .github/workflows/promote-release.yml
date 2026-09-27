@@ -1,0 +1,30 @@
+# Turns an existing pre-release into a regular release and marks it as the latest one.
+# Run it from the Actions tab once a pre-release has been tested. Without a tag it uses v<mod_version>-<minecraft_version>.
+
+name: promote release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (default: v<mod_version>-<minecraft_version>)'
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: promote release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          prop() { grep "^$1=" gradle.properties | cut -d= -f2-; }
+          tag="${TAG:-v$(prop mod_version)-$(prop minecraft_version)}"
+          gh release edit "$tag" --prerelease=false --latest
+          gh release view "$tag"
