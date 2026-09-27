@@ -1,5 +1,6 @@
 # Builds the mod and publishes a GitHub release with the jar, either when a version tag (e.g. v1.1.2-26.3) is pushed
-# or when run manually from the Actions tab, in which case the tag v<mod_version>-<minecraft_version> is created.
+# or when run manually from the Actions tab, in which case the tag v<mod_version>-<minecraft_version> is created
+# and the release can be marked as a pre-release.
 # The release notes are the latest CHANGELOG.md section plus the requirements read from gradle.properties.
 
 name: release
@@ -8,6 +9,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark the release as a pre-release'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -53,6 +59,7 @@ jobs:
       - name: publish release
         env:
           GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
           prop() { grep "^$1=" gradle.properties | cut -d= -f2-; }
           if [ "$GITHUB_REF_TYPE" = "tag" ]; then
@@ -60,7 +67,11 @@ jobs:
           else
             tag="v$(prop mod_version)-$(prop minecraft_version)"
           fi
-          gh release create "$tag" \
+          prerelease_flag=""
+          if [ "$PRERELEASE" = "true" ]; then
+            prerelease_flag="--prerelease"
+          fi
+          gh release create "$tag" $prerelease_flag \
             --target "$GITHUB_SHA" \
             --title "TIMM $(prop mod_version) for Minecraft $(prop minecraft_version) (Fabric)" \
             --notes-file release-notes.md \
