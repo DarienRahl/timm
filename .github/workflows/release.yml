@@ -1,4 +1,5 @@
-# Builds the mod and publishes a GitHub release with the jar whenever a version tag (e.g. v1.1.2-26.3) is pushed.
+# Builds the mod and publishes a GitHub release with the jar, either when a version tag (e.g. v1.1.2-26.3) is pushed
+# or when run manually from the Actions tab, in which case the tag v<mod_version>-<minecraft_version> is created.
 # The release notes are the latest CHANGELOG.md section plus the requirements read from gradle.properties.
 
 name: release
@@ -6,6 +7,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -53,7 +55,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           prop() { grep "^$1=" gradle.properties | cut -d= -f2-; }
-          gh release create "$GITHUB_REF_NAME" \
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="v$(prop mod_version)-$(prop minecraft_version)"
+          fi
+          gh release create "$tag" \
+            --target "$GITHUB_SHA" \
             --title "TIMM $(prop mod_version) for Minecraft $(prop minecraft_version) (Fabric)" \
             --notes-file release-notes.md \
             $(find build/libs -name '*.jar' ! -name '*-sources.jar')
