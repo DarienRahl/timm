@@ -3,6 +3,10 @@
 * **x.Y versions** are either updates that add content or major bug fixes
 * **x.y.Z versions** are either small content update (language translation, keybind change, ...) or bug fixes
 
+## v1.1.3
+* Add Music Notification support for all 147 songs: title, author, album and TIMM cover are shown in the notifications,
+  and every song can be played on its own from the Music Notification jukebox screen
+
 # v1.1.2
 * Add an option to disable music fading on biome switch
 * Add a safeguard for null fade duration to prevent bugs
