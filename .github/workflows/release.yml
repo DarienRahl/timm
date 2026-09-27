@@ -1,0 +1,59 @@
+# Builds the mod and publishes a GitHub release with the jar whenever a version tag (e.g. v1.1.2-26.3) is pushed.
+# The release notes are the latest CHANGELOG.md section plus the requirements read from gradle.properties.
+
+name: release
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: setup jdk
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.7.1'
+      - name: build
+        run: gradle build
+      - name: write release notes
+        run: |
+          prop() { grep "^$1=" gradle.properties | cut -d= -f2-; }
+          {
+            echo "The Immersive Music Mod $(prop mod_version) for Minecraft $(prop minecraft_version) (Fabric)."
+            echo
+            echo "Music by Nate, mod by Pardys. Original project: https://github.com/sf-inc/timm"
+            echo
+            echo "## Changelog"
+            awk '/^#+ v/ { n++; next } n == 1' CHANGELOG.md
+            echo
+            echo "## Requirements"
+            echo "* Minecraft $(prop minecraft_version)"
+            echo "* Fabric Loader $(prop loader_version) or newer"
+            echo "* [Fabric API](https://modrinth.com/mod/fabric-api)"
+            echo "* [Cloth Config](https://modrinth.com/mod/cloth-config) $(prop clothconfig_version) or newer"
+            echo "* [Mod Menu](https://modrinth.com/mod/modmenu) (optional, to open the config screen)"
+            echo
+            echo "Structure music also requires the mod on the server."
+          } > release-notes.md
+          cat release-notes.md
+      - name: publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prop() { grep "^$1=" gradle.properties | cut -d= -f2-; }
+          gh release create "$GITHUB_REF_NAME" \
+            --title "TIMM $(prop mod_version) for Minecraft $(prop minecraft_version) (Fabric)" \
+            --notes-file release-notes.md \
+            $(find build/libs -name '*.jar' ! -name '*-sources.jar')
