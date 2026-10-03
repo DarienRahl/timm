@@ -46,6 +46,10 @@
     "timm:crimson_forest",
     "minecraft:music.nether.crimson_forest"
   ],
+  "minecraft:dappled_forest": [
+    "timm:forest",
+    "minecraft:music.overworld.forest"
+  ],
   "minecraft:dark_forest": [
     "timm:dark_forest",
     "minecraft:music.overworld.forest"
@@ -140,7 +144,7 @@
     "minecraft:music.overworld.meadow"
   ],
   "minecraft:mushroom_fields": [
-    "timm:mushroom",
+    "timm:mushroom_fields",
     "minecraft:music.game"
   ],
   "minecraft:nether_wastes": [
@@ -213,6 +217,10 @@
   "minecraft:stony_shore": [
     "timm:river",
     "minecraft:music.game"
+  ],
+  "minecraft:sulfur_caves": [
+    "timm:dripstone_caves",
+    "minecraft:music.overworld.sulfur_caves"
   ],
   "minecraft:sunflower_plains": [
     "timm:plains",
@@ -380,7 +388,7 @@
     "timm:taiga"
   ],
   "terralith:mirage_isles": [
-    "timm:mushroom"
+    "timm:mushroom_fields"
   ],
   "terralith:moonlight_grove": [
     "timm:dark_forest"
@@ -1784,10 +1792,10 @@
     "timm:swamp"
   ],
   "wythers:mushroom_caves": [
-    "timm:mushroom"
+    "timm:mushroom_fields"
   ],
   "wythers:mushroom_island": [
-    "timm:mushroom"
+    "timm:mushroom_fields"
   ],
   "wythers:old_growth_taiga_crags": [
     "timm:taiga"
@@ -2011,7 +2019,7 @@
     "timm:nether_wastes"
   ],
   "betternether:nether_grasslands": [
-    "timm:soul_sand_valleys"
+    "timm:soul_sand_valley"
   ],
   "betternether:nether_jungle": [
     "minecraft:music.game"

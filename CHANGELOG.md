@@ -10,6 +10,16 @@
 * Fix music never moving on to the next song while in a pale garden
 * Fix the "Now playing" toast and `/nowplaying` sometimes losing the song name
 * Fix the "reset delay on biome switch" option using seconds as ticks
+* Fix TIMM's menu songs never playing in the main menu
+* Fix the mushroom fields songs (and a few modded biome songs) never playing because of wrong playlist ids
+* Fix structure music playing only once per structure type, until another kind of structure was visited
+* Fix the music staying quieter or jumping in volume after a fade was interrupted (song ending, world change)
+* Fix the song of a structure from the previous world or dimension playing after travelling
+* Add playlists for the new dappled forest and sulfur caves biomes
+* Stream the music instead of loading every song played into memory, where each one (up to ~55 MB) stayed until
+  resources were reloaded
+* Spread the structure checks of the players over the second, check each nearby structure only once instead of once
+  per chunk, and skip players without the mod
 
 ## v1.1.3
 * Add Music Notification support for all 147 songs: title, author, album and TIMM cover are shown in the notifications,

@@ -23,10 +23,12 @@ public class MinecraftMixin {
 
     @ModifyExpressionValue(method = "getSituationalMusic", at = @At(value = "FIELD", target = "Lnet/minecraft/sounds/Musics;MENU:Lnet/minecraft/sounds/Music;", opcode = Opcodes.GETSTATIC))
     private Music updateMenuMusic(Music original) {
-        if (this.player == null) return original;
-
-        Music music = BiomePlaylist.getMenuMusic(this.player.getRandom());
-        return music != null ? music : original;
+        // The menu music is only picked when there is no player, so the player's random cannot be used
+        Music music = BiomePlaylist.getMenuMusic(BiomePlaylist.MENU_RANDOM);
+        if (music != null) return music;
+        // The vanilla menu music replaces the current song: as the playlist is rolled every tick,
+        // it would cut TIMM's menu songs right after they start
+        return new Music(original.sound(), original.minDelay(), original.maxDelay(), false);
     }
 
     @ModifyExpressionValue(method = "getSituationalMusic", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/attribute/BackgroundMusic;select(ZZ)Ljava/util/Optional;"))

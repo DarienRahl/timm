@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class BiomePlaylist {
+    public static final RandomSource MENU_RANDOM = RandomSource.create();
     public static final Identifier UNDEFINED_BIOME = Timm.id("undefined_biome");
     public static Identifier CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
     public static final HashMap<Identifier, ArrayList<Identifier>> EVENTS_BY_BIOME = new HashMap<>();
@@ -104,8 +105,7 @@ public class BiomePlaylist {
         Path path = getPath();
         if (path == null) return;
 
-        try {
-            JsonReader jsonReader = new JsonReader(new InputStreamReader(Files.newInputStream(path)));
+        try (JsonReader jsonReader = new JsonReader(new InputStreamReader(Files.newInputStream(path)))) {
             while (jsonReader.hasNext()) {
                 JsonToken jsonToken = jsonReader.peek();
                 if (jsonToken == JsonToken.BEGIN_OBJECT) {
