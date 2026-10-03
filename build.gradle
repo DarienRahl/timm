@@ -77,6 +77,11 @@ java {
     withSourcesJar()
 }
 
+sourcesJar {
+    // The music is already in the mod jar, there is no need to ship it twice
+    exclude("**/*.ogg")
+}
+
 jar {
     from("LICENSE") {
         rename { "${it}_${base.archivesName.get()}" }

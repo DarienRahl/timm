@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class BiomePlaylist {
+    public static final RandomSource MENU_RANDOM = RandomSource.create();
     public static final Identifier UNDEFINED_BIOME = Timm.id("undefined_biome");
     public static Identifier CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
     public static final HashMap<Identifier, ArrayList<Identifier>> EVENTS_BY_BIOME = new HashMap<>();
@@ -52,6 +53,8 @@ public class BiomePlaylist {
     }
 
     public static Music getCreativeMusic(RandomSource random) {
+        // Not tied to a biome: a song started here must not fade out on biome switch
+        CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
         ArrayList<Identifier> musics = EVENTS_BY_BIOME.get(CREATIVE_ID);
         if (musics == null || musics.isEmpty()) return null;
 
@@ -67,6 +70,8 @@ public class BiomePlaylist {
     }
 
     public static Music getEndMusic(RandomSource random) {
+        // Not tied to a biome: a song started here must not fade out on biome switch
+        CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
         ArrayList<Identifier> musics = EVENTS_BY_BIOME.get(END_ID);
         if (musics == null || musics.isEmpty()) return null;
 
@@ -82,6 +87,8 @@ public class BiomePlaylist {
     }
 
     public static Music getMenuMusic(RandomSource random) {
+        // Not tied to a biome: a song started here must not fade out on biome switch
+        CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
         ArrayList<Identifier> musics = EVENTS_BY_BIOME.get(MENU_ID);
         if (musics == null || musics.isEmpty()) return null;
 
@@ -98,8 +105,7 @@ public class BiomePlaylist {
         Path path = getPath();
         if (path == null) return;
 
-        try {
-            JsonReader jsonReader = new JsonReader(new InputStreamReader(Files.newInputStream(path)));
+        try (JsonReader jsonReader = new JsonReader(new InputStreamReader(Files.newInputStream(path)))) {
             while (jsonReader.hasNext()) {
                 JsonToken jsonToken = jsonReader.peek();
                 if (jsonToken == JsonToken.BEGIN_OBJECT) {

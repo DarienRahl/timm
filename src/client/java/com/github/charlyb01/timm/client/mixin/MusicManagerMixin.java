@@ -8,6 +8,7 @@ import com.github.charlyb01.timm.config.StructureFadeOut;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -15,6 +16,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -39,12 +41,19 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
     @Unique private Identifier structureEventPlaying;
     @Unique private float volume = 1.0F;
     @Unique private int switchDelay = 0;
+    @Unique private @Nullable ClientLevel structureEventLevel;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
+        if (this.structureEvent != null && this.structureEventLevel != this.minecraft.level) {
+            // Requested in a previous world or dimension, the structure is not there anymore
+            this.structureEvent = null;
+            this.structureEventLevel = null;
+        }
         if (this.minecraft.level == null || this.minecraft.player == null) return;
 
         if (this.currentMusic == null) {
+            this.resetFade();
             if (this.structureEvent != null) this.playStructureMusic();
             return;
         }
@@ -61,7 +70,7 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
             this.volume = 1.f;
             this.minecraft.getSoundManager().updateCategoryVolume(SoundSource.MUSIC, this.volume);
             this.nextSongDelay = ModConfig.get().general.resetDelayOnBiomeSwitch
-                ? this.random.nextIntBetweenInclusive(ModConfig.get().general.minDelay, ModConfig.get().general.maxDelay)
+                ? Mth.nextInt(this.random, ModConfig.get().general.minDelay * 20, ModConfig.get().general.maxDelay * 20)
                 : 10;
             this.currentMusic = null;
 
@@ -81,11 +90,14 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
     @Inject(method = "startPlaying", at = @At("HEAD"))
     private void resetStructure(CallbackInfo ci) {
         this.structureEventPlaying = null;
+        this.resetFade();
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/sounds/MusicManager;fadePlaying(F)Z"))
     private boolean useOnlyOneFadeMethod(MusicManager instance, float volume, Operation<Boolean> original) {
-        return false;
+        // Skip the vanilla fade but keep running the rest of the tick: returning false would freeze the music
+        // manager in places where the music volume is not 1 (e.g. pale gardens), so no new song would ever start
+        return true;
     }
 
     @Unique
@@ -128,6 +140,16 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
     }
 
     @Unique
+    private void resetFade() {
+        // A fade can be interrupted (song ending, world change): a new song must not start with a lowered volume
+        this.switchDelay = 0;
+        if (this.volume < 1.f) {
+            this.volume = 1.f;
+            this.minecraft.getSoundManager().updateCategoryVolume(SoundSource.MUSIC, this.volume);
+        }
+    }
+
+    @Unique
     private void playStructureMusic() {
         SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(this.structureEvent);
         Music music = new Music(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(soundEvent),
@@ -137,10 +159,14 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
         this.startPlaying(music);
         this.structureEventPlaying = this.structureEvent;
         this.structureEvent = null;
+        this.structureEventLevel = null;
     }
 
     @Override
     public void timm$setStructureEventId(Identifier soundId) {
+        // Do not queue the structure song that is already playing, otherwise it restarts as soon as it ends
+        if (soundId.equals(this.structureEventPlaying) && this.currentMusic != null) return;
         this.structureEvent = soundId;
+        this.structureEventLevel = this.minecraft.level;
     }
 }
