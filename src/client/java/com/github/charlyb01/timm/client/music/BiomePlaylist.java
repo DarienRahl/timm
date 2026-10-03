@@ -52,6 +52,8 @@ public class BiomePlaylist {
     }
 
     public static Music getCreativeMusic(RandomSource random) {
+        // Not tied to a biome: a song started here must not fade out on biome switch
+        CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
         ArrayList<Identifier> musics = EVENTS_BY_BIOME.get(CREATIVE_ID);
         if (musics == null || musics.isEmpty()) return null;
 
@@ -67,6 +69,8 @@ public class BiomePlaylist {
     }
 
     public static Music getEndMusic(RandomSource random) {
+        // Not tied to a biome: a song started here must not fade out on biome switch
+        CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
         ArrayList<Identifier> musics = EVENTS_BY_BIOME.get(END_ID);
         if (musics == null || musics.isEmpty()) return null;
 
@@ -82,6 +86,8 @@ public class BiomePlaylist {
     }
 
     public static Music getMenuMusic(RandomSource random) {
+        // Not tied to a biome: a song started here must not fade out on biome switch
+        CURRENT_BIOME_EVENT = UNDEFINED_BIOME;
         ArrayList<Identifier> musics = EVENTS_BY_BIOME.get(MENU_ID);
         if (musics == null || musics.isEmpty()) return null;
 
