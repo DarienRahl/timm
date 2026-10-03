@@ -115,6 +115,7 @@
     "minecraft:music.overworld.grove"
   ],
   "minecraft:ice_spikes": [
+    "timm:ice_spikes",
     "timm:snow_plains",
     "minecraft:music.game"
   ],

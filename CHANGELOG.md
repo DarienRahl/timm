@@ -12,6 +12,7 @@
 * Fix the "reset delay on biome switch" option using seconds as ticks
 * Fix TIMM's menu songs never playing in the main menu
 * Fix the mushroom fields songs (and a few modded biome songs) never playing because of wrong playlist ids
+* Fix the ice spikes songs never playing: no playlist used them
 * Fix structure music playing only once per structure type, until another kind of structure was visited
 * Fix the music staying quieter or jumping in volume after a fade was interrupted (song ending, world change)
 * Fix the song of a structure from the previous world or dimension playing after travelling
