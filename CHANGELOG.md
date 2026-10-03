@@ -17,6 +17,11 @@
 * Fix the music staying quieter or jumping in volume after a fade was interrupted (song ending, world change)
 * Fix the song of a structure from the previous world or dimension playing after travelling
 * Add playlists for the new dappled forest and sulfur caves biomes
+* Fix the biomes of Oh The Biomes We've Gone never getting TIMM's songs: the mod changed its id from `byg` to
+  `biomeswevegone`
+* Fix misspelled biome ids of Biomes O' Plenty, Regions Unexplored and Wythers, whose songs never played
+* Add playlists for the newer biomes of Terralith, Nature's Spirit, Biomes O' Plenty, Regions Unexplored, BetterNether
+  and Wythers
 * Stream the music instead of loading every song played into memory, where each one (up to ~55 MB) stayed until
   resources were reloaded
 * Spread the structure checks of the players over the second, check each nearby structure only once instead of once
