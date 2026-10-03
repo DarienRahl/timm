@@ -8,6 +8,7 @@ import com.github.charlyb01.timm.config.StructureFadeOut;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -40,12 +41,19 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
     @Unique private Identifier structureEventPlaying;
     @Unique private float volume = 1.0F;
     @Unique private int switchDelay = 0;
+    @Unique private @Nullable ClientLevel structureEventLevel;
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
+        if (this.structureEvent != null && this.structureEventLevel != this.minecraft.level) {
+            // Requested in a previous world or dimension, the structure is not there anymore
+            this.structureEvent = null;
+            this.structureEventLevel = null;
+        }
         if (this.minecraft.level == null || this.minecraft.player == null) return;
 
         if (this.currentMusic == null) {
+            this.resetFade();
             if (this.structureEvent != null) this.playStructureMusic();
             return;
         }
@@ -82,6 +90,7 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
     @Inject(method = "startPlaying", at = @At("HEAD"))
     private void resetStructure(CallbackInfo ci) {
         this.structureEventPlaying = null;
+        this.resetFade();
     }
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/sounds/MusicManager;fadePlaying(F)Z"))
@@ -131,6 +140,16 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
     }
 
     @Unique
+    private void resetFade() {
+        // A fade can be interrupted (song ending, world change): a new song must not start with a lowered volume
+        this.switchDelay = 0;
+        if (this.volume < 1.f) {
+            this.volume = 1.f;
+            this.minecraft.getSoundManager().updateCategoryVolume(SoundSource.MUSIC, this.volume);
+        }
+    }
+
+    @Unique
     private void playStructureMusic() {
         SoundEvent soundEvent = SoundEvent.createVariableRangeEvent(this.structureEvent);
         Music music = new Music(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(soundEvent),
@@ -140,6 +159,7 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
         this.startPlaying(music);
         this.structureEventPlaying = this.structureEvent;
         this.structureEvent = null;
+        this.structureEventLevel = null;
     }
 
     @Override
@@ -147,5 +167,6 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
         // Do not queue the structure song that is already playing, otherwise it restarts as soon as it ends
         if (soundId.equals(this.structureEventPlaying) && this.currentMusic != null) return;
         this.structureEvent = soundId;
+        this.structureEventLevel = this.minecraft.level;
     }
 }
