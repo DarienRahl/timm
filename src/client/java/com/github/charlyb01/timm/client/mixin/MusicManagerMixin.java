@@ -15,6 +15,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -61,7 +62,7 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
             this.volume = 1.f;
             this.minecraft.getSoundManager().updateCategoryVolume(SoundSource.MUSIC, this.volume);
             this.nextSongDelay = ModConfig.get().general.resetDelayOnBiomeSwitch
-                ? this.random.nextIntBetweenInclusive(ModConfig.get().general.minDelay, ModConfig.get().general.maxDelay)
+                ? Mth.nextInt(this.random, ModConfig.get().general.minDelay * 20, ModConfig.get().general.maxDelay * 20)
                 : 10;
             this.currentMusic = null;
 
@@ -85,7 +86,9 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
 
     @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/sounds/MusicManager;fadePlaying(F)Z"))
     private boolean useOnlyOneFadeMethod(MusicManager instance, float volume, Operation<Boolean> original) {
-        return false;
+        // Skip the vanilla fade but keep running the rest of the tick: returning false would freeze the music
+        // manager in places where the music volume is not 1 (e.g. pale gardens), so no new song would ever start
+        return true;
     }
 
     @Unique
@@ -141,6 +144,8 @@ public abstract class MusicManagerMixin implements MusicManagerIMixin {
 
     @Override
     public void timm$setStructureEventId(Identifier soundId) {
+        // Do not queue the structure song that is already playing, otherwise it restarts as soon as it ends
+        if (soundId.equals(this.structureEventPlaying) && this.currentMusic != null) return;
         this.structureEvent = soundId;
     }
 }

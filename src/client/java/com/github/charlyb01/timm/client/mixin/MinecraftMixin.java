@@ -36,7 +36,10 @@ public class MinecraftMixin {
         Level level = this.player.level();
         if (level.dimension() == Level.END) {
             Music music = BiomePlaylist.getEndMusic(this.player.getRandom());
-            return music != null ? Optional.of(music) : original;
+            if (music != null) return Optional.of(music);
+            // The vanilla End music replaces the current song: as the playlist is rolled every tick,
+            // it would cut TIMM's End songs right after they start
+            return original.map(vanilla -> new Music(vanilla.sound(), vanilla.minDelay(), vanilla.maxDelay(), false));
         }
 
         if (this.player.getAbilities().instabuild && this.player.getAbilities().mayfly) {

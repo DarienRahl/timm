@@ -3,6 +3,14 @@
 * **x.Y versions** are either updates that add content or major bug fixes
 * **x.y.Z versions** are either small content update (language translation, keybind change, ...) or bug fixes
 
+## v1.1.4
+* Fix music fading out and restarting in a loop in creative mode and in the End
+* Fix TIMM's End songs being cut right after they start
+* Fix structure music restarting over and over when two structures are nearby
+* Fix music never moving on to the next song while in a pale garden
+* Fix the "Now playing" toast and `/nowplaying` sometimes losing the song name
+* Fix the "reset delay on biome switch" option using seconds as ticks
+
 ## v1.1.3
 * Add Music Notification support for all 147 songs: title, author, album and TIMM cover are shown in the notifications,
   and every song can be played on its own from the Music Notification jukebox screen
