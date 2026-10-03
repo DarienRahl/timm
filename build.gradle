@@ -21,6 +21,16 @@ loom {
     }
 }
 
+fabricApi {
+    // Adds the gametest source set and the runClientGameTest task, which starts the game with the mod and runs the
+    // client game tests. It is not part of the build, and the tests are not in the mod jar
+    configureTests {
+        createSourceSet = true
+        modId = "timm-gametest"
+        enableGameTests = false
+    }
+}
+
 
 repositories {
     maven { url "https://maven.shedaniel.me/" }
